@@ -1,8 +1,6 @@
 import vedo
 import numpy as np
-import sys
-
-from Fetal_Workspace_Analysis.ambf.ambf_controller.dvrk.scripts.psmFK import*
+from ambf.ambf_controller.dvrk.scripts.psmFK import*
 
 # joint limits
 q1_lim = [0 , 90]

@@ -3,7 +3,7 @@ import numpy as np
 from ambf.ambf_controller.dvrk.scripts.psmFK import*
 
 
-PI = np.pi()
+PI = np.pi
 # joint max limits: Outer Yaw, Outer Pitch, Insertion, Wrist Roll, Wrist Pitch, Wrist Yaw 
 q_max = [90*PI/180 , 54*PI/180 , 0.240 , 180*PI/180 , 180*PI/180 , 180*PI/180 ] # in radians and meters
 q_min = [-90*PI/180 , -54*PI/180 , 0.000 , -180*PI/180 , -180*PI/180 , -180*PI/180 ] # in radians and meters
@@ -27,14 +27,31 @@ q6 = np.arange(qlim_l[6],qlim_u[6],step) #Wrist Yaw
 q1 = qlim_l[0]
 q2 = qlim_l[1]
 q3 = qlim_l[2]
+i = 0
+EE_cloudx = []
+EE_cloudy = []
+EE_cloudz = []
+
 while q1 <= qlim_u[0]:
     while q2 <= qlim_u[1]:
         while q3 <= qlim_u[2]:
-            base_frame_pos = np.mat([[0],[0],[0],[0]])
+            joint_pos = [q1 , q2 , q3 , 0 , 0 , 0]
+            base_frame_pos = np.mat([[0],[0],[0],[1]])
+            print("Outer Yaw [rads]: " , q1)
+            print("Outer Pitch [rads]: " , q2)
+            print("Insertion [m]: " , q3 )
             EE_pos = np.matmul(compute_FK(joint_pos),base_frame_pos)
-            print(EE_pos)
-            print(compute_FK(joint_pos))
+            print("End Effector Position[m]: ")
+            print( EE_pos , '\n')
+            #print(compute_FK(joint_pos))
             
+            i = i + 1
             q3 = q3 + step_p
+        
+        q3 = qlim_l[2]
         q2 = q2 + step_r
+    
+    q2 = qlim_l[1]
     q1 = q1 + step_r
+
+    

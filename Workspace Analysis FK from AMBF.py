@@ -1,6 +1,6 @@
 import vedo
 import numpy as np
-from ambf.ambf_controller.dvrk.scripts.psmFK import*
+from psmFK import*
 
 
 PI = np.pi

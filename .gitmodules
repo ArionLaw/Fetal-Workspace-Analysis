@@ -1,6 +1,0 @@
-[submodule "ambf"]
-	path = ambf
-	url = git@github.com:WPI-AIM/ambf.git
-[submodule "kinpy"]
-	path = kinpy
-	url = git@github.com:neka-nat/kinpy.git

@@ -1,6 +1,6 @@
 import numpy as np
-from ambf.ambf_controller.dvrk.scripts.utilities import *
-from ambf.ambf_controller.dvrk.scripts.kinematics import *
+from utilities import *
+from kinematics import *
 
 # THIS IS THE FK FOR THE PSM MOUNTED WITH THE LARGE NEEDLE DRIVER TOOL. THIS IS THE
 # SAME KINEMATIC CONFIGURATION FOUND IN THE DVRK MANUAL. NOTE, JUST LIKE A FAULT IN THE

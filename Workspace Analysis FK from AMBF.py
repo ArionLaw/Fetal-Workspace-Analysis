@@ -151,7 +151,7 @@ while j in range(prismatic_divisions):
         revolute2_divisions = revolute2_divisions + 2
         q2 = np.linspace(qlim_l_ECM[1],qlim_u_ECM[1],revolute2_divisions)      
 
-### Meshing and Volume Comparisons ###
+### Meshing and Volume Visualizations ###
 PSM_EE_xyz.pop(0)
 PSM_SterileAdapter_xyz.pop(0)
 ECM_xyz.pop(0)
@@ -187,13 +187,18 @@ shellECM = volumeECM.extract_geometry()
 
 ECM_arm = Mesh(shellECM, c="blue", alpha=0.4)
 
-RCM1xyz = [0.02,0,0]
-RCM2xyz = [-0.02,0,0]
+### Transformation of Volumes according to RCM locations ###
+offset = 0.1 #for debugging RCM offset
+rot_angle = 20 #for debugging RCM rotation deg
+
+RCM1xyz = [offset,0,0] #[x,y,z] 
+RCM2xyz = [-offset,0,0]
 RCM_ECMxyz = [0,0,0]
-PSM1_RWS.pos(RCM1xyz).rotate(15,axis=(0,1,0),point=(RCM1xyz),rad=False)
-PSM2_RWS.pos(RCM2xyz).rotate(-15,axis=(0,1,0),point=(RCM2xyz),rad=False)
-PSM1_SterileAdapter.pos(RCM1xyz).rotate(15,axis=(0,1,0),point=(RCM1xyz),rad=False)
-PSM2_SterileAdapter.pos(RCM2xyz).rotate(-15,axis=(0,1,0),point=(RCM2xyz),rad=False)
+
+PSM1_RWS.pos(RCM1xyz).rotate(rot_angle,axis=(0,1,0),point=(RCM1xyz),rad=False)
+PSM2_RWS.pos(RCM2xyz).rotate(-rot_angle,axis=(0,1,0),point=(RCM2xyz),rad=False)
+PSM1_SterileAdapter.pos(RCM1xyz).rotate(rot_angle,axis=(0,1,0),point=(RCM1xyz),rad=False)
+PSM2_SterileAdapter.pos(RCM2xyz).rotate(-rot_angle,axis=(0,1,0),point=(RCM2xyz),rad=False)
 #ECM_FOV.pos(RCM_ECMxyz).rotate(0,axis=(0,1,0),point=(RCM_ECMxyz),rad=False)
 #ECM_arm.pos(RCM_ECMxyz).rotate(0,axis=(0,1,0),point=(RCM_ECMxyz),rad=False)
 
@@ -202,16 +207,22 @@ plt = Plotter(shape=(1,3), interactive=False, axes=3)
 #plt.at(0).show(PSM1_RWS, PSM2_RWS, ECM_FOV, "environment", axes = True)
 plt.at(0).show(PSM1_RWS, PSM1_SterileAdapter, PSM2_RWS, PSM2_SterileAdapter, ECM_FOV, ECM_arm, "environment", axes = True)
 
-#intersect
+### intersect calculation ###
 Opt1 = PSM1_RWS.boolean("intersect", ECM_FOV).c('magenta')
 Opt1 = Opt1.boolean("intersect", PSM2_RWS).c('magenta')
 print(Opt1.volume()*10**6 , "[cc]")
 plt.at(1).show(Opt1, "intersect volume: %4.2f[cc]" % (Opt1.volume()*10**6) , resetcam=False)
 
-Opt2 = PSM1_SterileAdapter.boolean("intersect", ECM_arm).c('cyan')
-Opt2 = Opt2.boolean("intersect", PSM2_SterileAdapter).c('cyan')
-print(Opt2.volume()*10**6 , "[cc]")
-plt.at(2).show(Opt2, "intersect volume: %4.2f[cc]" % (Opt2.volume()*10**6) , resetcam=False)
+ExtSweep1 = PSM1_SterileAdapter.boolean("intersect", ECM_arm).c('cyan')
+ExtSweep2 = PSM2_SterileAdapter.boolean("intersect", ECM_arm).c('cyan')
+Opt2 = ExtSweep1.boolean("intersect", PSM2_SterileAdapter).c('cyan')
 
-
+if Opt2.volume()*10**6 > 0:
+    intersect = Opt2.volume()*10**6
+    print(intersect, "[cc]")
+    plt.at(2).show(Opt2, "intersect volume: %4.2f[cc]" %intersect , resetcam=False)
+else:
+    intersect = (ExtSweep1.volume()+ExtSweep2.volume())*10**6 
+    print(intersect, "[cc]")
+    plt.at(2).show(ExtSweep1,ExtSweep2, "intersect volume: %4.2f[cc]" %intersect , resetcam=False)
 plt.interactive().close()

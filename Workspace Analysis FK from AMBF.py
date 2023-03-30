@@ -4,7 +4,7 @@ import pyvista as pv
 
 PI = np.pi
 
-### For PSM ###
+### For PSM End Effector ###
 from psmFK import*
 """
 q1 Outer Yaw
@@ -25,7 +25,6 @@ qlim_l_PSM = [-30*PI/180 , -30*PI/180 , 0.02 , -120*PI/180 , -90*PI/180 , -90*PI
 revolute1_divisions = 5
 revolute2_divisions = 5
 prismatic_divisions = round((qlim_u_PSM[2] - qlim_l_PSM[2])/0.005)+1
-
 q1 = np.linspace(qlim_l_PSM[0],qlim_u_PSM[0],revolute1_divisions)
 q2 = np.linspace(qlim_l_PSM[1],qlim_u_PSM[1],revolute2_divisions)
 q3 = np.linspace(qlim_l_PSM[2],qlim_u_PSM[2],prismatic_divisions)
@@ -41,11 +40,6 @@ while j in range(prismatic_divisions):
             joint_pos = [q1[h] , q2[k] , q3[j] , 0 , 0 , 0]
             base_frame_pos = np.mat([[0],[0],[0],[1]])
             PSM_EE_pos = np.matmul(compute_FK(joint_pos),base_frame_pos)
-            #print("Outer Yaw [rads]: " , q1[h])
-            #print("Outer Pitch [rads]: " , q2[k])
-            #print("Insertion [m]: " , q3[j] )
-            #print("End Effector Position[m]: ")
-            #print( PSM_EE_pos , '\n')
             PSM_EE_xyz.append([float(PSM_EE_pos[0]),float(PSM_EE_pos[1]),float(PSM_EE_pos[2])])
             i = i + 1
 
@@ -59,25 +53,24 @@ while j in range(prismatic_divisions):
     print("Insertion [m]: " , q3[j] )
     k = 0
     j = j + 1
-    if PSM_EE_xyz[i][0] - PSM_EE_xyz[i-1][0] > 0.005:
+    if abs(PSM_EE_xyz[i][0] - PSM_EE_xyz[i-1][0]) > 0.005:
         revolute1_divisions = revolute1_divisions + 2
         q1 = np.linspace(qlim_l_PSM[0],qlim_u_PSM[0],revolute1_divisions)
         revolute2_divisions = revolute2_divisions + 2
         q2 = np.linspace(qlim_l_PSM[1],qlim_u_PSM[1],revolute2_divisions)
 
-revolute1_divisions = 5
-revolute2_divisions = 5
+### PSM Linkages ###
+revolute1_divisions = 15
+revolute2_divisions = 15
 prismatic_divisions = round((qlim_u_PSM[2] - qlim_l_PSM[2])/0.005)+1
-
 q1 = np.linspace(qlim_l_PSM[0],qlim_u_PSM[0],revolute1_divisions)
 q2 = np.linspace(qlim_l_PSM[1],qlim_u_PSM[1],revolute2_divisions)
 q3 = np.linspace(qlim_l_PSM[2],qlim_u_PSM[2],prismatic_divisions)
 
 i = 0
-j = 0
+j = prismatic_divisions-1
 h = 0
 k = 0
-
 PSM_SterileAdapter_xyz = [[]]
 while j in range(prismatic_divisions):
     while k in range(revolute2_divisions):
@@ -85,11 +78,6 @@ while j in range(prismatic_divisions):
             joint_pos = [q1[h] , q2[k] , q3[j]]
             base_frame_pos = np.mat([[0],[0],[0],[1]])
             PSM_SterileAdapter_pos = np.matmul(compute_FK(joint_pos),base_frame_pos)
-            #print("Outer Yaw [rads]: " , q1[h])
-            #print("Outer Pitch [rads]: " , q2[k])
-            #print("Insertion [m]: " , q3[j] )
-            #print("End Effector Position[m]: ")
-            #print( PSM_EE_pos , '\n')
             PSM_SterileAdapter_xyz.append([float(PSM_SterileAdapter_pos[0]),float(PSM_SterileAdapter_pos[1]),float(PSM_SterileAdapter_pos[2])])
             i = i + 1
 
@@ -102,13 +90,11 @@ while j in range(prismatic_divisions):
 
     print("Insertion [m]: " , q3[j] )
     k = 0
-    j = j + 1
-    if PSM_SterileAdapter_xyz[i][0] - PSM_SterileAdapter_xyz[i-1][0] > 0.005:
+    j = j - 1
+    if abs(PSM_SterileAdapter_xyz[i][0] - PSM_SterileAdapter_xyz[i-1][0]) > 0.005:
         revolute1_divisions = revolute1_divisions + 2
         q1 = np.linspace(qlim_l_PSM[0],qlim_u_PSM[0],revolute1_divisions)
         revolute2_divisions = revolute2_divisions + 2
-        q2 = np.linspace(qlim_l_PSM[1],qlim_u_PSM[1],revolute2_divisions)      
-
         q2 = np.linspace(qlim_l_PSM[1],qlim_u_PSM[1],revolute2_divisions)
 
 ### for ECM ###
@@ -120,7 +106,6 @@ q3 Insertion
 q4 Roll
 """
 
-
 # ECM joint max limits: Outer Yaw, Outer Pitch, Insertion, Roll
 q_max_ECM = [90*PI/180 , 66*PI/180 , 0.240 , 90*PI/180] # in radians and meters
 q_min_ECM = [-90*PI/180 , -44*PI/180 , 0.000 , -90*PI/180] # in radians and meters
@@ -129,19 +114,17 @@ q_min_ECM = [-90*PI/180 , -44*PI/180 , 0.000 , -90*PI/180] # in radians and mete
 qlim_u_ECM = [30*PI/180 , 30*PI/180 , 0.2 , 90*PI/180] # in radians and meters
 qlim_l_ECM = [-30*PI/180 , -30*PI/180 , 0.02 , -90*PI/180] # in radians and meters
 
-revolute1_divisions = 5
-revolute2_divisions = 5
+revolute1_divisions = 15
+revolute2_divisions = 15
 prismatic_divisions = round((qlim_u_ECM[2] - qlim_l_ECM[2])/0.005)+1
-
 q1 = np.linspace(qlim_l_ECM[0],qlim_u_ECM[0],revolute1_divisions)
 q2 = np.linspace(qlim_l_ECM[1],qlim_u_ECM[1],revolute2_divisions)
 q3 = np.linspace(qlim_l_ECM[2],qlim_u_ECM[2],prismatic_divisions)
 
 i = 0
-j = 0
+j = prismatic_divisions-1
 h = 0
 k = 0
-
 ECM_xyz = [[]]
 while j in range(prismatic_divisions):
     while k in range(revolute2_divisions):
@@ -149,11 +132,6 @@ while j in range(prismatic_divisions):
             joint_pos = [q1[h] , q2[k] , q3[j]]
             base_frame_pos = np.mat([[0],[0],[0],[1]])
             ECM_pos = np.matmul(compute_FK(joint_pos),base_frame_pos)
-            #print("Outer Yaw [rads]: " , q1[h])
-            #print("Outer Pitch [rads]: " , q2[k])
-            #print("Insertion [m]: " , q3[j] )
-            #print("End Effector Position[m]: ")
-            #print( PSM_EE_pos , '\n')
             ECM_xyz.append([float(ECM_pos[0]),float(ECM_pos[1]),float(ECM_pos[2])])
             i = i + 1
 
@@ -166,8 +144,8 @@ while j in range(prismatic_divisions):
 
     print("Insertion [m]: " , q3[j] )
     k = 0
-    j = j + 1
-    if ECM_xyz[i][0] - ECM_xyz[i-1][0] > 0.005:
+    j = j - 1
+    if abs(ECM_xyz[i][0] - ECM_xyz[i-1][0]) > 0.005:
         revolute1_divisions = revolute1_divisions + 2
         q1 = np.linspace(qlim_l_ECM[0],qlim_u_ECM[0],revolute1_divisions)
         revolute2_divisions = revolute2_divisions + 2

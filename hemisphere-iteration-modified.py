@@ -42,7 +42,7 @@ Ext_Uterus_Simp = Ext_Uterus_Simp.fill_holes(size=30) # fills bottom to make enc
 FOV_depth = 0.15
 FOV_width = 0.05
 ECM_FOV = Cone(pos=(0,0,0),r = FOV_width , height = FOV_depth, res=64, axis=(0,0,1),c="blue",alpha = 0.6)
-
+show(port_locs, Ext_Uterus_Simp, ECM_FOV, __doc__, axes=1, azimuth = 30 , elevation = -30, roll = -30)   
 """ECM_FOV.pos(port[0,0] - [0,0,FOV_depth/2]).rotate(float(rot_ang[0,0]),axis=rot_axis[0,0], point=port[0,0],rad=True)
 show(port_locs, Ext_Uterus_Simp, ECM_FOV, __doc__, axes=1)
 plt.interactive().close()
@@ -66,11 +66,6 @@ ECM_FOV.rotate(-float(rot_ang[0,2]),axis=rot_axis[0,2], point=port[0,2],rad=True
 #print(rot_axis)
 for a in range(steps):
     for b in range(steps):
-        print(a)
-        print(b)
-        #print(port[a,b])
-        #print(rot_ang[a,b])
-        #print(rot_axis[a,b])
         time.sleep(.1) #slowdown for visualization 
         if math.isnan(rot_axis[a,b,0]) == True or math.isnan(rot_axis[a,b,1]) == True or math.isnan(rot_axis[a,b,2]) == True:
             ECM_FOV.pos(port[a,b] - [0,0,FOV_depth/2])

@@ -1,8 +1,47 @@
 from math import sin, cos, pi
 import math
 import numpy as np
-from vedo import*
-import sys,time
+from vedo import Plotter, Mesh, Sphere, Cone
+
+def MeshTransformtoPort(meshInternal,meshExternal,a,b):
+    if math.isnan(rot_axis[a,b,0]) == True: #all values NaN if no rotation
+        meshInternal.pos(port[a,b] - [0,0,FOV_depth/2])
+        meshExternal.pos(port[a,b] + [0,0,FOV_depth/2])    
+    else:
+        meshInternal.pos(port[a,b] - [0,0,FOV_depth/2]).rotate(float(rot_ang[a,b]),axis=rot_axis[a,b], point=port[a,b],rad=True)
+        meshExternal.pos(port[a,b] + [0,0,FOV_depth/2]).rotate(float(rot_ang[a,b]),axis=rot_axis[a,b], point=port[a,b],rad=True)
+
+def MeshReset(meshInternal,meshExternal,a,b):
+    if math.isnan(rot_axis[a,b,0]) == True: #all values NaN if no rotation
+        meshInternal.pos(port[a,b] - [0,0,FOV_depth/2])
+        meshExternal.pos(port[a,b] + [0,0,FOV_depth/2])    
+    else:
+        meshInternal.rotate(-float(rot_ang[a,b]),axis=rot_axis[a,b], point=port[a,b],rad=True)
+        meshExternal.rotate(-float(rot_ang[a,b]),axis=rot_axis[a,b], point=port[a,b],rad=True)
+
+def getInternalIntersect(ECM_FOV, PSM1_RWS , PSM2_RWS):
+    ECM_PSM1 = ECM_FOV.boolean("intersect", PSM1_RWS).c('magenta')
+    Opt1 = ECM_PSM1.boolean("intersect", PSM2_RWS).c('magenta')
+    intersect = Opt1.volume()*10**6
+    print("internal intersect volume: %4.2f[cc]" %intersect)
+    plt.at(1).show(Opt1, "internal intersect volume: %4.2f[cc]" %intersect , resetcam=False)
+    return intersect
+
+def getExternalIntersect(ECM_arm, PSM1_SterileAdapter , PSM2_SterileAdapter):
+    ExtSweep1 = ECM_arm.boolean("intersect", PSM1_SterileAdapter).c('cyan')
+    ExtSweep2 = ECM_arm.boolean("intersect", PSM2_SterileAdapter).c('cyan')
+    Opt2 = ExtSweep1.boolean("intersect", PSM2_SterileAdapter).c('cyan')
+
+    if Opt2.volume()*10**6 > 0:
+        intersect = Opt2.volume()*10**6
+        print("external intersect volume: %4.2f[cc]" %intersect)
+        plt.at(2).show(Opt2, "external intersect volume: %4.2f[cc]" %intersect , resetcam=False)
+        return intersect
+    else:
+        intersect = (ExtSweep1.volume()+ExtSweep2.volume())*10**6 
+        print("external intersect volume: %4.2f[cc]" %intersect)
+        plt.at(2).show(ExtSweep1,ExtSweep2, "external intersect volume: %4.2f[cc]" %intersect, resetcam=False)
+        return intersect
 
 R = 0.15 # radius (m)
 i = 0
@@ -32,49 +71,110 @@ for a in range(steps):
         rot_ang[a,b] = np.arccos(np.clip(np.dot(v1_u, v3_u), -1.0, 1.0))
         rot_axis[a,b] = np.cross(v1_u,v2_u)/np.linalg.norm(np.cross(v1_u,v2_u))
         i += 1
-plt = Plotter(shape=(1,1), interactive=False, axes=3)
+
+plt = Plotter(shape=(1,3), interactive=False, axes=1)
+
 port_locs = Mesh(zones).ps(10) # meshing and displaying points on hemisphere surface
-# Generating hemisphere surface for boolean intersection
-#uterus_boundary = Mesh(fit_sphere(zones))
-Ext_Uterus_Simp = Sphere(pos=(0,0,0),r=R,alpha=0.4)  # generate full sphere
+Ext_Uterus_Simp = Sphere(pos=(0,0,0),r=R,c="red",alpha=0.4)  # generate full sphere
 Ext_Uterus_Simp = Ext_Uterus_Simp.cut_with_plane(normal=(0,0,1)) # remove bottom of sphere
 Ext_Uterus_Simp = Ext_Uterus_Simp.fill_holes(size=30) # fills bottom to make enclosed hemisphere
+
 FOV_depth = 0.15
-FOV_width = 0.05
-ECM_FOV = Cone(pos=(0,0,0),r = FOV_width , height = FOV_depth, res=64, axis=(0,0,1),c="blue",alpha = 0.6)
-show(port_locs, Ext_Uterus_Simp, ECM_FOV, __doc__, axes=1, azimuth = 30 , elevation = -30, roll = -30)   
-"""ECM_FOV.pos(port[0,0] - [0,0,FOV_depth/2]).rotate(float(rot_ang[0,0]),axis=rot_axis[0,0], point=port[0,0],rad=True)
-show(port_locs, Ext_Uterus_Simp, ECM_FOV, __doc__, axes=1)
-plt.interactive().close()
-ECM_FOV.rotate(-float(rot_ang[0,0]),axis=rot_axis[0,0], point=port[0,0],rad=True)
+FOV_width = 0.08
+ECM_FOV = Cone(pos=(0,0,0),r = FOV_width , height = FOV_depth, res=64, axis=(0,0,1),c="cyan",alpha = 0.6)
+PSM1_EE = Cone(pos=(0,0,0),r = FOV_width , height = FOV_depth, res=64, axis=(0,0,1),c="magenta",alpha = 0.6)
+PSM2_EE = Cone(pos=(0,0,0),r = FOV_width , height = FOV_depth, res=64, axis=(0,0,1),c="green",alpha = 0.6)
+ECM_sweep = Cone(pos=(0,0,0),r = FOV_width , height = FOV_depth, res=64, axis=(0,0,1),c="cyan",alpha = 0.6)
+PSM1_sweep = Cone(pos=(0,0,0),r = FOV_width , height = FOV_depth, res=64, axis=(0,0,1),c="magenta",alpha = 0.6)
+PSM2_sweep = Cone(pos=(0,0,0),r = FOV_width , height = FOV_depth, res=64, axis=(0,0,1),c="green",alpha = 0.6)
+ECM_sweep.rotate(180,axis=[0,1,0], point=[0,0,0],rad=False)
+PSM1_sweep.rotate(180,axis=[0,1,0], point=[0,0,0],rad=False)
+PSM2_sweep.rotate(180,axis=[0,1,0], point=[0,0,0],rad=False)
 
-ECM_FOV.pos(port[0,3] - [0,0,FOV_depth/2]).rotate(float(rot_ang[0,3]),axis=rot_axis[0,3], point=port[0,3],rad=True)
-show(port_locs, Ext_Uterus_Simp, ECM_FOV, __doc__, axes=1)
-plt.interactive().close()
-ECM_FOV.rotate(-float(rot_ang[0,3]),axis=rot_axis[0,3], point=port[0,3],rad=True)
 
-ECM_FOV.pos(port[3,3] - [0,0,FOV_depth/2])
-show(port_locs, Ext_Uterus_Simp, ECM_FOV, __doc__, axes=1)
-plt.interactive().close()
 
-ECM_FOV.pos(port[0,2] - [0,0,FOV_depth/2]).rotate(float(rot_ang[0,2]),axis=rot_axis[0,2], point=port[0,2],rad=True)
-show(port_locs, Ext_Uterus_Simp, ECM_FOV, __doc__, axes=1)
+partitionLS_PSM1 = range(steps//2)
+partitionRS_PSM2 = range(steps//2+1 , steps)
+partitionECM = [steps//2]
+
+sampleSize = steps*len(partitionLS_PSM1)*steps*len(partitionRS_PSM2)*steps
+Optimal_Intersect_Data = [[]] #store a1,b1,a2,b2,a3,b3, internal intersect , external intersect
+
+"""a1 = 1
+b1 = 1
+a2 = 2
+b2 = 1
+a3 = 3
+b3 = 1
+MeshTransformtoPort(ECM_FOV,ECM_sweep,a1,b1)
+MeshTransformtoPort(PSM1_EE,PSM1_sweep,a2,b2)
+MeshTransformtoPort(PSM2_EE,PSM2_sweep,a3,b3)
+plt.at(0).show(port_locs, Ext_Uterus_Simp, ECM_FOV, PSM1_EE , PSM2_EE , ECM_sweep, PSM1_sweep , PSM2_sweep, __doc__, axes=1, camera = {'pos':(0.5,-0.5,1), 'focal_point':(0,0,0), 'viewup':(0,0,1)})
+
+print("estimated run time: %5i / %5i" %(i , sampleSize))
+internal = getInternalIntersect(ECM_FOV,PSM1_EE,PSM2_EE)
+external = getExternalIntersect(ECM_sweep,PSM1_sweep,PSM2_sweep)
+Optimal_Intersect_Data.append([a,b,a2,b2,a3,b3,internal,external])
+
+MeshReset(PSM2_EE,PSM2_sweep,a3,b3)
+MeshReset(PSM1_EE,PSM1_sweep,a2,b2)
+MeshReset(ECM_FOV,ECM_sweep,a1,b1)"""
+
+"""a1 = 1
+b1 = 0
+a2 = 2
+b2 = 1
+a3 = 3
+b3 = 2
+MeshTransformtoPort(ECM_FOV,ECM_sweep,a1,b1)
+MeshTransformtoPort(PSM1_EE,PSM1_sweep,a2,b2)
+MeshTransformtoPort(PSM2_EE,PSM2_sweep,a3,b3)
+plt.at(0).show(port_locs, Ext_Uterus_Simp, ECM_FOV, PSM1_EE , PSM2_EE , ECM_sweep, PSM1_sweep , PSM2_sweep, __doc__, axes=1, camera = {'pos':(0.5,-0.5,1), 'focal_point':(0,0,0), 'viewup':(0,0,1)})
+
+print("estimated run time: %5i / %5i" %(i , sampleSize))
+internal = getInternalIntersect(ECM_FOV,PSM1_EE,PSM2_EE)
+external = getExternalIntersect(ECM_sweep,PSM1_sweep,PSM2_sweep)
+Optimal_Intersect_Data.append([a,b,a2,b2,a3,b3,internal,external])
+
 plt.interactive().close()
-ECM_FOV.rotate(-float(rot_ang[0,2]),axis=rot_axis[0,2], point=port[0,2],rad=True)"""
-#print(port)
-#print(rot_ang)
-#print(rot_axis)
-for a in range(steps):
-    for b in range(steps):
-        time.sleep(.1) #slowdown for visualization 
-        if math.isnan(rot_axis[a,b,0]) == True or math.isnan(rot_axis[a,b,1]) == True or math.isnan(rot_axis[a,b,2]) == True:
-            ECM_FOV.pos(port[a,b] - [0,0,FOV_depth/2])
-            show(port_locs, Ext_Uterus_Simp, ECM_FOV, __doc__, axes=1)            
-        else:
-            ECM_FOV.pos(port[a,b] - [0,0,FOV_depth/2]).rotate(float(rot_ang[a,b]),axis=rot_axis[a,b], point=port[a,b],rad=True)
-            show(port_locs, Ext_Uterus_Simp, ECM_FOV, __doc__, axes=1)
-            ECM_FOV.rotate(-float(rot_ang[a,b]),axis=rot_axis[a,b], point=port[a,b],rad=True)
-ECM_FOV.rotate(float(rot_ang[a,b]),axis=rot_axis[a,b], point=port[a,b],rad=True)            
+MeshReset(PSM2_EE,PSM2_sweep,a3,b3)
+MeshReset(PSM1_EE,PSM1_sweep,a2,b2)
+MeshReset(ECM_FOV,ECM_sweep,a1,b1)"""
+
+i=0
+for a1 in partitionECM:
+    for b1 in range(steps):
+        MeshTransformtoPort(ECM_FOV,ECM_sweep,a1,b1)       
+        
+        for a2 in partitionLS_PSM1:
+            for b2 in range(steps):
+                MeshTransformtoPort(PSM1_EE,PSM1_sweep,a2,b2)
+                
+                for a3 in partitionRS_PSM2:
+                    for b3 in range(steps):
+                        MeshTransformtoPort(PSM2_EE,PSM2_sweep,a3,b3)
+                        plt.at(0).show(port_locs, Ext_Uterus_Simp, ECM_FOV, PSM1_EE , PSM2_EE , ECM_sweep, PSM1_sweep , PSM2_sweep, __doc__, axes=1, camera = {'pos':(0.5,-0.5,1), 'focal_point':(0,0,0), 'viewup':(0,0,1)})
+                        #getInternalIntersect(ECM_FOV,PSM1_EE,PSM2_EE)
+                        #getExternalIntersect(ECM_sweep,PSM1_sweep,PSM2_sweep)
+                        """print("estimated run time: %5i / %5i" %(i , sampleSize))
+                        internal = getInternalIntersect(ECM_FOV,PSM1_EE,PSM2_EE)
+                        external = getExternalIntersect(ECM_sweep,PSM1_sweep,PSM2_sweep)
+                        print("internal intersect: %4.2f [cc]" %internal)
+                        print("external intersect: %4.2f [cc]" %external)
+                        Optimal_Intersect_Data.append([a,b,a2,b2,a3,b3,internal,external])"""
+                        #plt.interactive().close()
+                        i+=1
+                        
+                        MeshReset(PSM2_EE,PSM2_sweep,a3,b3)
+                MeshReset(PSM1_EE,PSM1_sweep,a2,b2)
+        MeshReset(ECM_FOV,ECM_sweep,a1,b1)
+                                    
+ECM_FOV.rotate(float(rot_ang[a1,b1]),axis=rot_axis[a1,b1], point=port[a1,b1],rad=True)
+PSM1_EE.rotate(float(rot_ang[a2,b2]),axis=rot_axis[a2,b2], point=port[a2,b2],rad=True)
+PSM2_EE.rotate(float(rot_ang[a3,b3]),axis=rot_axis[a3,b3], point=port[a3,b3],rad=True)
+ECM_sweep.rotate(float(rot_ang[a1,b1]),axis=rot_axis[a1,b1], point=port[a1,b1],rad=True)
+PSM1_sweep.rotate(float(rot_ang[a2,b2]),axis=rot_axis[a2,b2], point=port[a2,b2],rad=True)
+PSM2_sweep.rotate(float(rot_ang[a3,b3]),axis=rot_axis[a3,b3], point=port[a3,b3],rad=True)
 plt.interactive().close()
 
 

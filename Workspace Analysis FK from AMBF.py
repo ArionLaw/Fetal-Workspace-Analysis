@@ -175,7 +175,11 @@ shellSterileAdapter = volumeSterileAdapter.extract_geometry()
 PSM1_SterileAdapter = Mesh(shellSterileAdapter, c="red", alpha=0.4)
 PSM2_SterileAdapter = Mesh(shellSterileAdapter, c="green", alpha=0.4)
 
-ECM_FOV = Cone(pos=(0,0,-0.1),r = 0.08 , height = 0.2, res=64, axis=(0,0,1),c="blue",alpha = 0.4)
+FOV_depth = 0.2
+FOV_width = 0.1
+ECM_FOV = Cone(pos=(0,0,FOV_depth/2),r = FOV_width , height = FOV_depth, res=64, axis=(0,0,1),c="cyan",alpha = 0.6)
+ECM_FOV = ECM_FOV.pos(0,0,-FOV_depth/2)
+
 
 mesh_algo_radius = 1
 cloudECM = pv.PolyData(ECM_xyz)
@@ -186,32 +190,33 @@ shellECM = volumeECM.extract_geometry()
 
 ECM_arm = Mesh(shellECM, c="blue", alpha=0.4)
 
+write(ECM_FOV,'/home/arionlaw/Documents/Fetal-Workspace-Analysis/dVRK_Meshes/ECM_FOV.stl',binary=True)
+write(Mesh(shellRWS),'/home/arionlaw/Documents/Fetal-Workspace-Analysis/dVRK_Meshes/PSM_EE_RWS.stl',binary=True)
+write(Mesh(shellSterileAdapter),'/home/arionlaw/Documents/Fetal-Workspace-Analysis/dVRK_Meshes/PSM_SterileAdapter_Sweep.stl',binary=True)
+write(Mesh(shellECM),'/home/arionlaw/Documents/Fetal-Workspace-Analysis/dVRK_Meshes/ECM_Arm_Sweep.stl',binary=True)
+
 ### Transformation of Volumes according to RCM locations ###
 offset = 0.1 #for debugging RCM offset
 rot_angle = 20 #for debugging RCM rotation deg
 
 RCM1xyz = [offset,0,0] #[x,y,z] 
 RCM2xyz = [-offset,0,0]
-RCM_ECMxyz = [0,0,0]
+RCM_ECMxyz = [offset,0,0]
 
 PSM1_RWS.pos(RCM1xyz).rotate(rot_angle,axis=(0,1,0),point=(RCM1xyz),rad=False)
 PSM2_RWS.pos(RCM2xyz).rotate(-rot_angle,axis=(0,1,0),point=(RCM2xyz),rad=False)
 PSM1_SterileAdapter.pos(RCM1xyz).rotate(rot_angle,axis=(0,1,0),point=(RCM1xyz),rad=False)
 PSM2_SterileAdapter.pos(RCM2xyz).rotate(-rot_angle,axis=(0,1,0),point=(RCM2xyz),rad=False)
-#ECM_FOV.pos(RCM_ECMxyz).rotate(0,axis=(0,1,0),point=(RCM_ECMxyz),rad=False)
-#ECM_arm.pos(RCM_ECMxyz).rotate(0,axis=(0,1,0),point=(RCM_ECMxyz),rad=False)
-
-#Uterus = Mesh('Home/Documents/Fetal-Workspace-Analysis/Fetal_Meshes/high_res/UterusPhantom.obj')
-#Uterus = Mesh(dataurl + 'panther.stl', c = "pink", alpha=0.2)
-Uterus = Mesh("home/arionlaw/Documents/Fetal-Workspace-Analysis/Fetal_Meshes/panther.stl",c = "pink", alpha=0.2)
+#ECM_FOV.pos(RCM_ECMxyz).rotate(20,axis=(0,1,0),point=(RCM_ECMxyz),rad=False)
+ECM_arm.pos(RCM_ECMxyz).rotate(20,axis=(0,1,0),point=(RCM_ECMxyz),rad=False)
 
 settings.use_depth_peeling = True
 plt = Plotter(shape=(1,3), interactive=False, axes=3)
-#plt.at(0).show(PSM1_RWS, PSM2_RWS, ECM_FOV, "environment", axes = True)
-plt.at(0).show(PSM1_RWS, PSM1_SterileAdapter, PSM2_RWS, PSM2_SterileAdapter, ECM_FOV, ECM_arm, Uterus, "environment", axes = True)
+plt.at(0).show(PSM1_RWS, PSM1_SterileAdapter, PSM2_RWS, PSM2_SterileAdapter, ECM_FOV, ECM_arm, "environment", axes = True)
+plt.interactive().close()
 
 ### intersect calculation ###
-Opt1 = PSM1_RWS.boolean("intersect", ECM_FOV).c('magenta')
+"""Opt1 = PSM1_RWS.boolean("intersect", ECM_FOV).c('magenta')
 Opt1 = Opt1.boolean("intersect", PSM2_RWS).c('magenta')
 print(Opt1.volume()*10**6 , "[cc]")
 plt.at(1).show(Opt1, "intersect volume: %4.2f[cc]" % (Opt1.volume()*10**6) , resetcam=False)
@@ -227,5 +232,5 @@ if Opt2.volume()*10**6 > 0:
 else:
     intersect = (ExtSweep1.volume()+ExtSweep2.volume())*10**6 
     print(intersect, "[cc]")
-    plt.at(2).show(ExtSweep1,ExtSweep2, "intersect volume: %4.2f[cc]" %intersect , resetcam=False)
-plt.interactive().close()
+    plt.at(2).show(ExtSweep1,ExtSweep2, "intersect volume: %4.2f[cc]" %intersect , resetcam=False)"""
+#plt.interactive().close()

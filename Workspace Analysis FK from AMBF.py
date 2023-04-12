@@ -1,8 +1,7 @@
 from vedo import*
 import numpy as np
 import pyvista as pv
-
-PI = np.pi
+from math import sin, cos, pi
 
 ### For PSM End Effector ###
 from psmFK import*
@@ -15,12 +14,12 @@ q5 Wrist Pitch
 q6 Wrist Yaw
 """
 # PSM joint max limits: Outer Yaw, Outer Pitch, Insertion, Wrist Roll, Wrist Pitch, Wrist Yaw 
-q_max_PSM = [90*PI/180 , 54*PI/180 , 0.240 , 180*PI/180 , 180*PI/180 , 180*PI/180 ] # in radians and meters
-q_min_PSM = [-90*PI/180 , -54*PI/180 , 0.000 , -180*PI/180 , -180*PI/180 , -180*PI/180 ] # in radians and meters
+q_max_PSM = [90*pi/180 , 54*pi/180 , 0.240 , 180*pi/180 , 180*pi/180 , 180*pi/180 ] # in radians and meters
+q_min_PSM = [-90*pi/180 , -54*pi/180 , 0.000 , -180*pi/180 , -180*pi/180 , -180*pi/180 ] # in radians and meters
 
 # PSM joint soft limits: Outer Yaw, Outer Pitch, Insertion, Wrist Roll, Wrist Pitch, Wrist Yaw 
-qlim_u_PSM = [30*PI/180 , 30*PI/180 , 0.2 , 120*PI/180 , 90*PI/180 , 90*PI/180 ] # in radians and meters
-qlim_l_PSM = [-30*PI/180 , -30*PI/180 , 0.02 , -120*PI/180 , -90*PI/180 , -90*PI/180 ] # in radians and meters
+qlim_u_PSM = [30*pi/180 , 30*pi/180 , 0.2 , 120*pi/180 , 90*pi/180 , 90*pi/180 ] # in radians and meters
+qlim_l_PSM = [-30*pi/180 , -30*pi/180 , 0.02 , -120*pi/180 , -90*pi/180 , -90*pi/180 ] # in radians and meters
 
 revolute1_divisions = 5
 revolute2_divisions = 5
@@ -107,12 +106,12 @@ q4 Roll
 """
 
 # ECM joint max limits: Outer Yaw, Outer Pitch, Insertion, Roll
-q_max_ECM = [90*PI/180 , 66*PI/180 , 0.240 , 90*PI/180] # in radians and meters
-q_min_ECM = [-90*PI/180 , -44*PI/180 , 0.000 , -90*PI/180] # in radians and meters
+q_max_ECM = [90*pi/180 , 66*pi/180 , 0.240 , 90*pi/180] # in radians and meters
+q_min_ECM = [-90*pi/180 , -44*pi/180 , 0.000 , -90*pi/180] # in radians and meters
 
 # ECM joint soft limits: Outer Yaw, Outer Pitch, Insertion, Roll
-qlim_u_ECM = [30*PI/180 , 30*PI/180 , 0.2 , 90*PI/180] # in radians and meters
-qlim_l_ECM = [-30*PI/180 , -30*PI/180 , 0.02 , -90*PI/180] # in radians and meters
+qlim_u_ECM = [30*pi/180 , 30*pi/180 , 0.2 , 90*pi/180] # in radians and meters
+qlim_l_ECM = [-30*pi/180 , -30*pi/180 , 0.02 , -90*pi/180] # in radians and meters
 
 revolute1_divisions = 15
 revolute2_divisions = 15
@@ -202,10 +201,14 @@ PSM2_SterileAdapter.pos(RCM2xyz).rotate(-rot_angle,axis=(0,1,0),point=(RCM2xyz),
 #ECM_FOV.pos(RCM_ECMxyz).rotate(0,axis=(0,1,0),point=(RCM_ECMxyz),rad=False)
 #ECM_arm.pos(RCM_ECMxyz).rotate(0,axis=(0,1,0),point=(RCM_ECMxyz),rad=False)
 
+#Uterus = Mesh('Home/Documents/Fetal-Workspace-Analysis/Fetal_Meshes/high_res/UterusPhantom.obj')
+#Uterus = Mesh(dataurl + 'panther.stl', c = "pink", alpha=0.2)
+Uterus = Mesh("home/arionlaw/Documents/Fetal-Workspace-Analysis/Fetal_Meshes/panther.stl",c = "pink", alpha=0.2)
+
 settings.use_depth_peeling = True
 plt = Plotter(shape=(1,3), interactive=False, axes=3)
 #plt.at(0).show(PSM1_RWS, PSM2_RWS, ECM_FOV, "environment", axes = True)
-plt.at(0).show(PSM1_RWS, PSM1_SterileAdapter, PSM2_RWS, PSM2_SterileAdapter, ECM_FOV, ECM_arm, "environment", axes = True)
+plt.at(0).show(PSM1_RWS, PSM1_SterileAdapter, PSM2_RWS, PSM2_SterileAdapter, ECM_FOV, ECM_arm, Uterus, "environment", axes = True)
 
 ### intersect calculation ###
 Opt1 = PSM1_RWS.boolean("intersect", ECM_FOV).c('magenta')

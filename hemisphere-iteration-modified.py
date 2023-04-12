@@ -2,6 +2,10 @@ from math import sin, cos, pi
 import math
 import numpy as np
 from vedo import Plotter, Mesh, Sphere, Cone
+import os
+import sys
+
+CurrentDirectory = sys.path[0]
 
 def MeshTransformtoPort(mesh,a,b):
     if math.isnan(rot_axis[a,b,0]) == True: #all values NaN if no rotation
@@ -75,9 +79,9 @@ Ext_Uterus_Simp = Sphere(pos=(0,0,0),r=R,c="red",alpha=0.4)  # generate full sph
 Ext_Uterus_Simp = Ext_Uterus_Simp.cut_with_plane(normal=(0,0,1)) # remove bottom of sphere
 Ext_Uterus_Simp = Ext_Uterus_Simp.fill_holes(size=30) # fills bottom to make enclosed hemisphere
 
-Uterus = Mesh('/home/arionlaw/Documents/Fetal-Workspace-Analysis/Fetal_Meshes/UterusPhantom.stl',c = "pink", alpha=0.4)
+Uterus = Mesh(CurrentDirectory + '/Fetal_Meshes/UterusPhantom.stl',c = "pink", alpha=0.4)
 Uterus.rotate(-90,axis=(1,0,0),point=(0,0,0),rad=False).scale(s=0.0015,reset=True).shift(dx=0,dy=0.05,dz=0.045)
-Fetus = Mesh('/home/arionlaw/Documents/Fetal-Workspace-Analysis/Fetal_Meshes/FetalPhantom.stl',c = "yellow", alpha=0.6)
+Fetus = Mesh(CurrentDirectory + '/Fetal_Meshes/FetalPhantom.stl',c = "yellow", alpha=0.6)
 Fetus.rotate(-90,axis=(1,0,0),point=(0,0,0),rad=False).scale(s=0.001,reset=True).shift(dx=0,dy=0,dz=0.06)
 
 ### old conical approximations ###
@@ -90,12 +94,12 @@ Fetus.rotate(-90,axis=(1,0,0),point=(0,0,0),rad=False).scale(s=0.001,reset=True)
 #PSM1_sweep = Cone(pos=(0,0,-FOV_depth/2),r = FOV_width , height = FOV_depth, res=64, axis=(0,0,-1),c="magenta",alpha = 0.6)
 #PSM2_sweep = Cone(pos=(0,0,-FOV_depth/2),r = FOV_width , height = FOV_depth, res=64, axis=(0,0,-1),c="green",alpha = 0.6)
 
-ECM_FOV = Mesh('/home/arionlaw/Documents/Fetal-Workspace-Analysis/dVRK_Meshes/ECM_FOV.stl',c = "cyan", alpha=0.6)
-PSM1_EE = Mesh('/home/arionlaw/Documents/Fetal-Workspace-Analysis/dVRK_Meshes/PSM_EE_RWS.stl',c = "magneta", alpha=0.6)
-PSM2_EE = Mesh('/home/arionlaw/Documents/Fetal-Workspace-Analysis/dVRK_Meshes/PSM_EE_RWS.stl',c = "green", alpha=0.6)
-ECM_sweep = Mesh('/home/arionlaw/Documents/Fetal-Workspace-Analysis/dVRK_Meshes/ECM_Arm_Sweep.stl',c = "cyan", alpha=0.2)
-PSM1_sweep = Mesh('/home/arionlaw/Documents/Fetal-Workspace-Analysis/dVRK_Meshes/PSM_SterileAdapter_Sweep.stl',c = "magneta", alpha=0.2)
-PSM2_sweep = Mesh('/home/arionlaw/Documents/Fetal-Workspace-Analysis/dVRK_Meshes/PSM_SterileAdapter_Sweep.stl',c = "green", alpha=0.2)
+ECM_FOV = Mesh(CurrentDirectory + '/dVRK_Meshes/ECM_FOV.stl',c = "cyan", alpha=0.6)
+PSM1_EE = Mesh(CurrentDirectory + '/dVRK_Meshes/PSM_EE_RWS.stl',c = "magneta", alpha=0.6)
+PSM2_EE = Mesh(CurrentDirectory + '/dVRK_Meshes/PSM_EE_RWS.stl',c = "green", alpha=0.6)
+ECM_sweep = Mesh(CurrentDirectory + '/dVRK_Meshes/ECM_Arm_Sweep.stl',c = "cyan", alpha=0.2)
+PSM1_sweep = Mesh(CurrentDirectory + '/dVRK_Meshes/PSM_SterileAdapter_Sweep.stl',c = "magneta", alpha=0.2)
+PSM2_sweep = Mesh(CurrentDirectory + '/dVRK_Meshes/PSM_SterileAdapter_Sweep.stl',c = "green", alpha=0.2)
 
 #plt.at(0).show(port_locs, Ext_Uterus_Simp, ECM_FOV, PSM1_EE , PSM2_EE , ECM_sweep, PSM1_sweep , PSM2_sweep, __doc__, axes=1, camera = {'pos':(0.5,-0.5,1), 'focal_point':(0,0,0), 'viewup':(0,0,1)})
 #plt.interactive().close()

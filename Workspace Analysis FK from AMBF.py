@@ -2,6 +2,10 @@ from vedo import*
 import numpy as np
 import pyvista as pv
 from math import sin, cos, pi
+import os
+import sys
+
+CurrentDirectory = sys.path[0]
 
 ### For PSM End Effector ###
 from psmFK import*
@@ -190,10 +194,10 @@ shellECM = volumeECM.extract_geometry()
 
 ECM_arm = Mesh(shellECM, c="blue", alpha=0.4)
 
-write(ECM_FOV,'/home/arionlaw/Documents/Fetal-Workspace-Analysis/dVRK_Meshes/ECM_FOV.stl',binary=True)
-write(Mesh(shellRWS),'/home/arionlaw/Documents/Fetal-Workspace-Analysis/dVRK_Meshes/PSM_EE_RWS.stl',binary=True)
-write(Mesh(shellSterileAdapter),'/home/arionlaw/Documents/Fetal-Workspace-Analysis/dVRK_Meshes/PSM_SterileAdapter_Sweep.stl',binary=True)
-write(Mesh(shellECM),'/home/arionlaw/Documents/Fetal-Workspace-Analysis/dVRK_Meshes/ECM_Arm_Sweep.stl',binary=True)
+write(ECM_FOV, CurrentDirectory + '/dVRK_Meshes/ECM_FOV.stl',binary=True)
+write(Mesh(shellRWS), CurrentDirectory + '/dVRK_Meshes/PSM_EE_RWS.stl',binary=True)
+write(Mesh(shellSterileAdapter), CurrentDirectory + '/dVRK_Meshes/PSM_SterileAdapter_Sweep.stl',binary=True)
+write(Mesh(shellECM), CurrentDirectory + '/dVRK_Meshes/ECM_Arm_Sweep.stl',binary=True)
 
 ### Transformation of Volumes according to RCM locations ###
 offset = 0.1 #for debugging RCM offset

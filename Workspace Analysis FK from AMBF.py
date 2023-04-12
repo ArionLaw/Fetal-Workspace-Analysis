@@ -22,8 +22,8 @@ q_max_PSM = [90*pi/180 , 54*pi/180 , 0.240 , 180*pi/180 , 180*pi/180 , 180*pi/18
 q_min_PSM = [-90*pi/180 , -54*pi/180 , 0.000 , -180*pi/180 , -180*pi/180 , -180*pi/180 ] # in radians and meters
 
 # PSM joint soft limits: Outer Yaw, Outer Pitch, Insertion, Wrist Roll, Wrist Pitch, Wrist Yaw 
-qlim_u_PSM = [45*pi/180 , 45*pi/180 , 0.2 , 120*pi/180 , 90*pi/180 , 90*pi/180 ] # in radians and meters
-qlim_l_PSM = [-45*pi/180 , -45*pi/180 , 0.02 , -120*pi/180 , -90*pi/180 , -90*pi/180 ] # in radians and meters
+qlim_u_PSM = [15*pi/180 , 15*pi/180 , 0.2 , 120*pi/180 , 90*pi/180 , 90*pi/180 ] # in radians and meters
+qlim_l_PSM = [-15*pi/180 , -15*pi/180 , 0.02 , -120*pi/180 , -90*pi/180 , -90*pi/180 ] # in radians and meters
 
 revolute1_divisions = 5
 revolute2_divisions = 5
@@ -114,8 +114,8 @@ q_max_ECM = [90*pi/180 , 66*pi/180 , 0.240 , 90*pi/180] # in radians and meters
 q_min_ECM = [-90*pi/180 , -44*pi/180 , 0.000 , -90*pi/180] # in radians and meters
 
 # ECM joint soft limits: Outer Yaw, Outer Pitch, Insertion, Roll
-qlim_u_ECM = [45*pi/180 , 45*pi/180 , 0.2 , 90*pi/180] # in radians and meters
-qlim_l_ECM = [-45*pi/180 , -45*pi/180 , 0.02 , -90*pi/180] # in radians and meters
+qlim_u_ECM = [15*pi/180 , 15*pi/180 , 0.2 , 90*pi/180] # in radians and meters
+qlim_l_ECM = [-15*pi/180 , -15*pi/180 , 0.02 , -90*pi/180] # in radians and meters
 
 revolute1_divisions = 15
 revolute2_divisions = 15
@@ -180,7 +180,7 @@ PSM1_SterileAdapter = Mesh(shellSterileAdapter, c="red", alpha=0.4)
 PSM2_SterileAdapter = Mesh(shellSterileAdapter, c="green", alpha=0.4)
 
 FOV_depth = 0.2
-FOV_width = 0.1
+FOV_width = 0.05
 ECM_FOV = Cone(pos=(0,0,FOV_depth/2),r = FOV_width , height = FOV_depth, res=64, axis=(0,0,1),c="cyan",alpha = 0.6)
 ECM_FOV = ECM_FOV.pos(0,0,-FOV_depth/2)
 
@@ -218,23 +218,3 @@ settings.use_depth_peeling = True
 plt = Plotter(shape=(1,3), interactive=False, axes=3)
 plt.at(0).show(PSM1_RWS, PSM1_SterileAdapter, PSM2_RWS, PSM2_SterileAdapter, ECM_FOV, ECM_arm, "environment", axes = True)
 plt.interactive().close()
-
-### intersect calculation ###
-"""Opt1 = PSM1_RWS.boolean("intersect", ECM_FOV).c('magenta')
-Opt1 = Opt1.boolean("intersect", PSM2_RWS).c('magenta')
-print(Opt1.volume()*10**6 , "[cc]")
-plt.at(1).show(Opt1, "intersect volume: %4.2f[cc]" % (Opt1.volume()*10**6) , resetcam=False)
-
-ExtSweep1 = PSM1_SterileAdapter.boolean("intersect", ECM_arm).c('cyan')
-ExtSweep2 = PSM2_SterileAdapter.boolean("intersect", ECM_arm).c('cyan')
-Opt2 = ExtSweep1.boolean("intersect", PSM2_SterileAdapter).c('cyan')
-
-if Opt2.volume()*10**6 > 0:
-    intersect = Opt2.volume()*10**6
-    print(intersect, "[cc]")
-    plt.at(2).show(Opt2, "intersect volume: %4.2f[cc]" %intersect , resetcam=False)
-else:
-    intersect = (ExtSweep1.volume()+ExtSweep2.volume())*10**6 
-    print(intersect, "[cc]")
-    plt.at(2).show(ExtSweep1,ExtSweep2, "intersect volume: %4.2f[cc]" %intersect , resetcam=False)"""
-#plt.interactive().close()

@@ -22,8 +22,8 @@ q_max_PSM = [90*pi/180 , 54*pi/180 , 0.240 , 180*pi/180 , 180*pi/180 , 180*pi/18
 q_min_PSM = [-90*pi/180 , -54*pi/180 , 0.000 , -180*pi/180 , -180*pi/180 , -180*pi/180 ] # in radians and meters
 
 # PSM joint soft limits: Outer Yaw, Outer Pitch, Insertion, Wrist Roll, Wrist Pitch, Wrist Yaw 
-qlim_u_PSM = [30*pi/180 , 30*pi/180 , 0.2 , 120*pi/180 , 90*pi/180 , 90*pi/180 ] # in radians and meters
-qlim_l_PSM = [-30*pi/180 , -30*pi/180 , 0.02 , -120*pi/180 , -90*pi/180 , -90*pi/180 ] # in radians and meters
+qlim_u_PSM = [45*pi/180 , 45*pi/180 , 0.2 , 120*pi/180 , 90*pi/180 , 90*pi/180 ] # in radians and meters
+qlim_l_PSM = [-45*pi/180 , -45*pi/180 , 0.02 , -120*pi/180 , -90*pi/180 , -90*pi/180 ] # in radians and meters
 
 revolute1_divisions = 5
 revolute2_divisions = 5
@@ -114,8 +114,8 @@ q_max_ECM = [90*pi/180 , 66*pi/180 , 0.240 , 90*pi/180] # in radians and meters
 q_min_ECM = [-90*pi/180 , -44*pi/180 , 0.000 , -90*pi/180] # in radians and meters
 
 # ECM joint soft limits: Outer Yaw, Outer Pitch, Insertion, Roll
-qlim_u_ECM = [30*pi/180 , 30*pi/180 , 0.2 , 90*pi/180] # in radians and meters
-qlim_l_ECM = [-30*pi/180 , -30*pi/180 , 0.02 , -90*pi/180] # in radians and meters
+qlim_u_ECM = [45*pi/180 , 45*pi/180 , 0.2 , 90*pi/180] # in radians and meters
+qlim_l_ECM = [-45*pi/180 , -45*pi/180 , 0.02 , -90*pi/180] # in radians and meters
 
 revolute1_divisions = 15
 revolute2_divisions = 15
@@ -212,7 +212,7 @@ PSM2_RWS.pos(RCM2xyz).rotate(-rot_angle,axis=(0,1,0),point=(RCM2xyz),rad=False)
 PSM1_SterileAdapter.pos(RCM1xyz).rotate(rot_angle,axis=(0,1,0),point=(RCM1xyz),rad=False)
 PSM2_SterileAdapter.pos(RCM2xyz).rotate(-rot_angle,axis=(0,1,0),point=(RCM2xyz),rad=False)
 #ECM_FOV.pos(RCM_ECMxyz).rotate(20,axis=(0,1,0),point=(RCM_ECMxyz),rad=False)
-ECM_arm.pos(RCM_ECMxyz).rotate(20,axis=(0,1,0),point=(RCM_ECMxyz),rad=False)
+#ECM_arm.pos(RCM_ECMxyz).rotate(20,axis=(0,1,0),point=(RCM_ECMxyz),rad=False)
 
 settings.use_depth_peeling = True
 plt = Plotter(shape=(1,3), interactive=False, axes=3)

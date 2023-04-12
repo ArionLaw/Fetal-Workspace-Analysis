@@ -32,22 +32,24 @@ def getExternalIntersect(ECM_arm, PSM1_SterileAdapter , PSM2_SterileAdapter):
     ExtSweep2 = ECM_arm.boolean("intersect", PSM2_SterileAdapter).c('cyan')
     Opt2 = ExtSweep1.boolean("intersect", PSM2_SterileAdapter).c('cyan')
 
+    #fix collision defn 
+
     if Opt2.volume()*10**6 > 0:
         intersect = Opt2.volume()*10**6
         print("external intersect volume: %4.2f[cc]" %intersect)
         plt.at(2).show(Opt2, "external intersect volume: %4.2f[cc]" %intersect , resetcam=False)
-        return intersect
     else:
         intersect = (ExtSweep1.volume()+ExtSweep2.volume())*10**6 
         print("external intersect volume: %4.2f[cc]" %intersect)
         plt.at(2).show(ExtSweep1,ExtSweep2, "external intersect volume: %4.2f[cc]" %intersect, resetcam=False)
-        return intersect
+    
+    return intersect
 
 R = 0.15 # radius (m)
 i = 0
-min = -30*pi/180    # -90 deg to rad
-max = 30*pi/180     # 90 deg to rad
-step = 10*pi/180     # 5 deg step size to rad
+min = -45*pi/180    # -90 deg to rad
+max = 45*pi/180     # 90 deg to rad
+step = 15*pi/180     # 5 deg step size to rad
 steps = int((max-min)/step)+1
 
 alpha = np.linspace(min,max,steps)
@@ -111,13 +113,13 @@ partitionECM = [steps//2]
 sampleSize = steps*len(partitionLS_PSM1)*steps*len(partitionRS_PSM2)*steps
 Optimal_Intersect_Data = [[]] #store a1,b1,a2,b2,a3,b3, internal intersect , external intersect
 
-"""
+
 a1 = 3
-b1 = 1
-a2 = 2
-b2 = 1
-a3 = 4
-b3 = 1
+b1 = 3
+a2 = 0
+b2 = 3
+a3 = 6
+b3 = 3
 MeshTransformtoPort(ECM_FOV,a1,b1)
 MeshTransformtoPort(ECM_sweep,a1,b1)
 MeshTransformtoPort(PSM1_EE,a2,b2)
@@ -138,7 +140,7 @@ MeshReset(PSM1_EE,a2,b2)
 MeshReset(PSM1_sweep,a2,b2)
 MeshReset(PSM2_EE,a3,b3)
 MeshReset(PSM2_sweep,a3,b3)
-"""
+
 i=0
 for a1 in partitionECM:
     for b1 in range(steps):
@@ -155,13 +157,9 @@ for a1 in partitionECM:
                         MeshTransformtoPort(PSM2_EE,a3,b3)
                         MeshTransformtoPort(PSM2_sweep,a3,b3)  
                         plt.at(0).show(port_locs, Ext_Uterus_Simp, Uterus, Fetus, ECM_FOV, PSM1_EE , PSM2_EE, ECM_sweep, PSM1_sweep, PSM2_sweep, __doc__, axes=1, camera = {'pos':(0.8,-0.8,1.6), 'focal_point':(0,0,0.2), 'viewup':(0,0,1)})
-                        #getInternalIntersect(ECM_FOV,PSM1_EE,PSM2_EE)
-                        #getExternalIntersect(ECM_sweep,PSM1_sweep,PSM2_sweep)
                         """print("estimated run time: %5i / %5i" %(i , sampleSize))
                         internal = getInternalIntersect(ECM_FOV,PSM1_EE,PSM2_EE)
                         external = getExternalIntersect(ECM_sweep,PSM1_sweep,PSM2_sweep)
-                        print("internal intersect: %4.2f [cc]" %internal)
-                        print("external intersect: %4.2f [cc]" %external)
                         Optimal_Intersect_Data.append([a,b,a2,b2,a3,b3,internal,external])"""
                         #plt.interactive().close()
                         i+=1

@@ -94,10 +94,10 @@ def getExternalIntersect(ECM_arm, PSM1_SterileAdapter , PSM2_SterileAdapter):
 xmin = -15*pi/180
 xmax = 15*pi/180
 ymin = -30*pi/180
-ymax = 30*pi/180
+ymax = 20*pi/180
 fmin = 0
 fmax = 30*pi/180
-step = 2*pi/180     # 5 deg step size to rad
+step = 5*pi/180     # 5 deg step size to rad
 xsteps = int((xmax-xmin)/step)+1
 ysteps = int((ymax-ymin)/step)+1
 fsteps = int((fmax-fmin)/step)+1

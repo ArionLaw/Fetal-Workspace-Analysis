@@ -63,11 +63,12 @@ def MeshReset(mesh,a,b):
         mesh.pos(port[a,b]).rotate(-float(rot_ang[a,b]),axis=rot_axis[a,b], point=port[a,b],rad=True)    
 
 def getInternalIntersect(ECM_FOV, PSM1_RWS , PSM2_RWS):
-    ECM_PSM1 = ECM_FOV.boolean("intersect", PSM1_RWS).c('magenta')
-    Opt1 = ECM_PSM1.boolean("intersect", PSM2_RWS).c('magenta')
-    intersect = Opt1.volume()*10**6
+    #plt.at(1).clear(deep=True)
+    ECM_U_PSM1 = ECM_FOV.boolean("intersect", PSM1_RWS).c('magenta')
+    ECM_U_PSM1_U_PSM2 = ECM_U_PSM1.boolean("intersect", PSM2_RWS).c('magenta')
+    intersect = ECM_U_PSM1_U_PSM2.volume()*10**6
     print("internal intersect volume: %4.2f[cc]" %intersect)
-    #plt.at(1).show(Opt1, "internal intersect volume: %4.2f[cc]" %intersect , resetcam=False)
+    #plt.at(1).show(ECM_U_PSM1_U_PSM2, "internal intersect volume: %4.2f[cc]" %intersect , interactive=False, axes=1, resetcam=False)
     return intersect
 
 """
@@ -158,10 +159,10 @@ partitionECM = [xsteps//2]
 TotalSamples = fsteps*ysteps*len(partitionLS_PSM1)
 OptimizationData = [[]] 
 
-"""
-offset = 2
-spinalLocation = 8
-FetalPivotAngle = 20
+#"""
+offset = 3
+spinalLocation = 0
+FetalPivotAngle = 30
 Fetus.rotate(FetalPivotAngle,axis=(1,0,0),point=FetalHeadPivot,rad=False)
 Lesion.rotate(FetalPivotAngle,axis=(1,0,0),point=FetalHeadPivot,rad=False)
 LesionNormalVector.rotate(FetalPivotAngle,axis=(1,0,0),point=FetalHeadPivot,rad=False)
@@ -178,6 +179,7 @@ MeshTransformtoPort(PSM2_EE,a3,b3)
 #MeshTransformtoPort(PSM1_sweep,a2,b2)
 #MeshTransformtoPort(PSM2_sweep,a3,b3)
 
+internal = getInternalIntersect(ECM_FOV = ECM_FOV , PSM1_RWS = PSM1_EE , PSM2_RWS=PSM2_EE)
 OptimizationData.append([a1,b1,a2,b2,a3,b3,internal] + getPortToLesionData(a1,b1,a2,b2,a3,b3))
 plt.at(0).show(port_locs, Ext_Uterus_Simp, Uterus, Fetus, Lesion, LesionNormalVector, ECM_FOV, PSM1_EE , PSM2_EE, __doc__, axes=1, camera = {'pos':(0.3,-0.6,0.6), 'focal_point':(0,0,0), 'viewup':(0,0,1)})
 
@@ -190,7 +192,7 @@ MeshReset(PSM2_EE,a3,b3)
 #MeshReset(ECM_sweep,a1,b1)
 #MeshReset(PSM1_sweep,a2,b2)
 #MeshReset(PSM2_sweep,a3,b3)
-"""
+#"""
 
 i=0
 for t in range(fsteps):
@@ -209,10 +211,10 @@ for t in range(fsteps):
                 MeshTransformtoPort(PSM1_EE,a2,b2)  
                 MeshTransformtoPort(PSM2_EE,a3,b3)
 
-                #time.sleep(0.1)
+                #time.sleep(0.2)
                 plt.at(0).show(port_locs, Ext_Uterus_Simp, Uterus, Fetus, Lesion, LesionNormalVector, ECM_FOV, PSM1_EE , PSM2_EE, __doc__, axes=1, camera = {'pos':(0.3,-0.6,0.6), 'focal_point':(0,0,0), 'viewup':(0,0,1)})
                 print("estimated run time: %5i / %5i" %(i , TotalSamples))
-                #internal = getInternalIntersect(ECM_FOV,PSM1_EE,PSM2_EE)
+                #internal = getInternalIntersect(ECM_FOV = ECM_FOV , PSM1_RWS = PSM1_EE , PSM2_RWS=PSM2_EE)
                 #OptimizationData.append([t,a1,b1,a2,b2,a3,b3,internal] + getPortToLesionData(a1,b1,a2,b2,a3,b3))
                 OptimizationData.append([t,a1,b1,a2,b2,a3,b3] + getPortToLesionData(a1,b1,a2,b2,a3,b3))
                 #plt.interactive().close()

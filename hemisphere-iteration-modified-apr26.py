@@ -34,7 +34,9 @@ def getPortToLesionData(a1,b1,a2,b2,a3,b3):
     PSM1PortTwistAngle = np.arccos(np.dot(PSM1toLesion,PSM1PortNorm)/PSM1toLesionDistance/Magnitude(PSM1PortNorm))
     PSM2PortTwistAngle = np.arccos(np.dot(PSM2toLesion,PSM2PortNorm)/PSM2toLesionDistance/Magnitude(PSM2PortNorm))
 
-    return [ECMtoLesionDistance, PSM1toLesionDistance, PSM2toLesionDistance, ECMtoLesionNormAngle, PSM1toLesionNormAngle, PSM2toLesionNormAngle, ECMPortTwistAngle, PSM1PortTwistAngle, PSM2PortTwistAngle]
+    sigfig = 6
+    results = [round(ECMtoLesionDistance,sigfig), round(PSM1toLesionDistance,sigfig), round(PSM2toLesionDistance,sigfig), round(ECMtoLesionNormAngle,sigfig), round(PSM1toLesionNormAngle,sigfig), round(PSM2toLesionNormAngle,sigfig), round(ECMPortTwistAngle,sigfig), round(PSM1PortTwistAngle,sigfig), round(PSM2PortTwistAngle,sigfig)]
+    return results
 
 def MeshTransformtoPort(mesh,a,b):
     if math.isnan(rot_axis[a,b,0]) == True: #all values NaN if no rotation
@@ -61,7 +63,7 @@ def MeshReset(mesh,a,b):
         mesh.pos(port[a,b]) 
     else:
         mesh.pos(port[a,b]).rotate(-float(rot_ang[a,b]),axis=rot_axis[a,b], point=port[a,b],rad=True)    
-
+"""
 def getInternalIntersect(ECM_FOV, PSM1_RWS , PSM2_RWS):
     #plt.at(1).clear(deep=True)
     ECM_U_PSM1 = ECM_FOV.boolean("intersect", PSM1_RWS).c('magenta')
@@ -70,7 +72,7 @@ def getInternalIntersect(ECM_FOV, PSM1_RWS , PSM2_RWS):
     print("internal intersect volume: %4.2f[cc]" %intersect)
     #plt.at(1).show(ECM_U_PSM1_U_PSM2, "internal intersect volume: %4.2f[cc]" %intersect , interactive=False, axes=1, resetcam=False)
     return intersect
-
+"""
 """
 def getExternalIntersect(ECM_arm, PSM1_SterileAdapter , PSM2_SterileAdapter):
     ExtSweep1 = ECM_arm.boolean("intersect", PSM1_SterileAdapter).c('cyan')
@@ -92,22 +94,32 @@ def getExternalIntersect(ECM_arm, PSM1_SterileAdapter , PSM2_SterileAdapter):
 """
 
 ### optimization domain ###
-xmin = -15*pi/180
-xmax = 15*pi/180
-ymin = -30*pi/180
-ymax = 20*pi/180
-fmin = 0
-fmax = 30*pi/180
-step = 5*pi/180     # 5 deg step size to rad
-xsteps = round((xmax-xmin)/step)+1
-ysteps = round((ymax-ymin)/step)+1
-fsteps = round((fmax-fmin)/step)+1
-alpha = np.linspace(xmin,xmax,xsteps)
-beta = np.linspace(ymin,ymax,ysteps)
+R = 0.13 # uterus radius (m)
+step_arcDist = 0.010 # mesh step distance (m)
+step_angle = step_arcDist/R # step angle to achieve arcDist step size [angle = arclength/radius]
+step_tiltAngle = 5*pi/180     # 5 deg tilt step in radians
+
+alpha_min = -10*step_angle
+alpha_max = 10*step_angle
+beta_min = -15*step_angle
+beta_max = 15*step_angle
+theta_min = 0
+theta_max = 30*pi/180
+
+xsteps = round((alpha_max-alpha_min)/step_angle)+1
+ysteps = round((beta_max-beta_min)/step_angle)+1
+fsteps = round((theta_max-theta_min)/step_tiltAngle)+1
+alpha = np.linspace(alpha_min,alpha_max,xsteps)
+beta = np.linspace(beta_min,beta_max,ysteps)
+theta = np.linspace(theta_min,theta_max,fsteps)
+
 np.save("alpha",alpha)
 np.save("beta",beta)
 
-theta = np.linspace(fmin,fmax,fsteps)
+xpos = np.linspace(alpha_min*R,alpha_max*R,xsteps) # arc length = angle*radius
+ypos = np.linspace(beta_min*R,beta_max*R,ysteps) # arc length = angle*radius
+tilt_angle = np.linspace(theta_min/pi*180,theta_max/pi*180,fsteps)
+
 zones = np.ndarray(shape=(xsteps*ysteps,3)) # array to store surface points
 port = np.ndarray(shape=(xsteps,ysteps,3)) # matrix to store surface points
 port_norm = np.ndarray(shape=(xsteps,ysteps,3)) # matrix to store surface points
@@ -115,7 +127,6 @@ rot_ang = np.ndarray(shape=(xsteps,ysteps,1)) # matrix to store normal angle
 rot_axis = np.ndarray(shape=(xsteps,ysteps,3)) # matrix to store normal axis of rotation
 
 ### generating hemisphere using spherical coords ###
-R = 0.13 # uterus radius (m)
 i = 0
 for a in range(xsteps):
     for b in range(ysteps):
@@ -162,13 +173,14 @@ partitionECM = [xsteps//2]
 TotalSamples = fsteps*ysteps*len(partitionLS_PSM1)
 OptimizationData = [[]] 
 
-#"""
+"""
 offset = 3
 spinalLocation = 0
-FetalPivotAngle = 30
-Fetus.rotate(FetalPivotAngle,axis=(1,0,0),point=FetalHeadPivot,rad=False)
-Lesion.rotate(FetalPivotAngle,axis=(1,0,0),point=FetalHeadPivot,rad=False)
-LesionNormalVector.rotate(FetalPivotAngle,axis=(1,0,0),point=FetalHeadPivot,rad=False)
+FetalPivotAngle = 20
+t = round(FetalPivotAngle/(step_tiltAngle/pi*180))
+Fetus.rotate(theta[t],axis=(1,0,0),point=FetalHeadPivot,rad=False)
+Lesion.rotate(theta[t],axis=(1,0,0),point=FetalHeadPivot,rad=False)
+LesionNormalVector.rotate(theta[t],axis=(1,0,0),point=FetalHeadPivot,rad=False)
 a1 = partitionECM[0]
 b1 = spinalLocation
 a2 = partitionECM[0]-offset
@@ -182,11 +194,19 @@ MeshTransformtoPort(PSM2_EE,a3,b3)
 #MeshTransformtoPort(PSM1_sweep,a2,b2)
 #MeshTransformtoPort(PSM2_sweep,a3,b3)
 
-internal = getInternalIntersect(ECM_FOV = ECM_FOV , PSM1_RWS = PSM1_EE , PSM2_RWS=PSM2_EE)
-# OptimizationData.append([a1,b1,a2,b2,a3,b3,internal] + getPortToLesionData(a1,b1,a2,b2,a3,b3))
-plt.at(0).show(port_locs, Ext_Uterus_Simp, Uterus, Fetus, Lesion, LesionNormalVector, ECM_FOV, PSM1_EE , PSM2_EE, __doc__, axes=1, camera = {'pos':(0.3,-0.6,0.6), 'focal_point':(0,0,0), 'viewup':(0,0,1)})
+lesionx = Lesion.pos()[0]
+lesiony = Lesion.pos()[1]
+lesionz = Lesion.pos()[2]
+x1 = xpos[a1] - lesionx
+y1 = ypos[b1] - lesiony
+x2 = xpos[a2] - lesionx
+y2 = ypos[b2] - lesiony
+x3 = xpos[a3] - lesionx
+y3 = ypos[b3] - lesiony
 
-# print(OptimizationData) ********************************************************************************
+OptimizationData.append([tilt_angle[t],x1,y1,x2,y2,x3,y3] + getPortToLesionData(a1,b1,a2,b2,a3,b3))
+plt.at(0).show(port_locs, Ext_Uterus_Simp, Uterus, Fetus, Lesion, LesionNormalVector, ECM_FOV, PSM1_EE , PSM2_EE, __doc__, axes=1, camera = {'pos':(0.3,-0.6,0.6), 'focal_point':(0,0,0), 'viewup':(0,0,1)})
+print(OptimizationData)
 plt.interactive().close()
 
 MeshReset(ECM_FOV,a1,b1)
@@ -195,7 +215,7 @@ MeshReset(PSM2_EE,a3,b3)
 #MeshReset(ECM_sweep,a1,b1)
 #MeshReset(PSM1_sweep,a2,b2)
 #MeshReset(PSM2_sweep,a3,b3)
-#"""
+"""
 
 i=0
 for t in range(fsteps):
@@ -214,12 +234,20 @@ for t in range(fsteps):
                 MeshTransformtoPort(PSM1_EE,a2,b2)  
                 MeshTransformtoPort(PSM2_EE,a3,b3)
 
+                lesionx = Lesion.pos()[0]
+                lesiony = Lesion.pos()[1]
+                lesionz = Lesion.pos()[2]
+                x1 = round(xpos[a1] - lesionx,3)
+                y1 = round(ypos[b1] - lesiony,3)
+                x2 = round(xpos[a2] - lesionx,3)
+                y2 = round(ypos[b2] - lesiony,3)
+                x3 = round(xpos[a3] - lesionx,3)
+                y3 = round(ypos[b3] - lesiony,3)
+
                 #time.sleep(0.2)
-                # plt.at(0).show(port_locs, Ext_Uterus_Simp, Uterus, Fetus, Lesion, LesionNormalVector, ECM_FOV, PSM1_EE , PSM2_EE, __doc__, axes=1, camera = {'pos':(0.3,-0.6,0.6), 'focal_point':(0,0,0), 'viewup':(0,0,1)})
+                plt.at(0).show(port_locs, Ext_Uterus_Simp, Uterus, Fetus, Lesion, LesionNormalVector, ECM_FOV, PSM1_EE , PSM2_EE, __doc__, axes=1, camera = {'pos':(0.3,-0.6,0.6), 'focal_point':(0,0,0), 'viewup':(0,0,1)})
                 print("estimated run time: %5i / %5i" %(i , TotalSamples))
-                #internal = getInternalIntersect(ECM_FOV = ECM_FOV , PSM1_RWS = PSM1_EE , PSM2_RWS=PSM2_EE)
-                #OptimizationData.append([t,a1,b1,a2,b2,a3,b3,internal] + getPortToLesionData(a1,b1,a2,b2,a3,b3))
-                OptimizationData.append([t,a1,b1,a2,b2,a3,b3] + getPortToLesionData(a1,b1,a2,b2,a3,b3))
+                OptimizationData.append([tilt_angle[t],x1,y1,x2,y2,x3,y3] + getPortToLesionData(a1,b1,a2,b2,a3,b3))
                 #plt.interactive().close()
                 i+=1
 

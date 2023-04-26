@@ -13,7 +13,7 @@ def Magnitude(vector):
 
 def getPortToLesionData(a1,b1,a2,b2,a3,b3):
     #surface normals at port locations and fetus lesion 
-    LesionNorm = LesionNormalVector.pos() - Lesion.pos()
+    LesionNorm = LesionNormalVector.eval(1) - Lesion.pos()
     ECMPortNorm = port_norm[a1,b1]
     PSM1PortNorm = port_norm[a2,b2]
     PSM2PortNorm = port_norm[a3,b3]
@@ -99,9 +99,10 @@ ymax = 20*pi/180
 fmin = 0
 fmax = 30*pi/180
 step = 5*pi/180     # 5 deg step size to rad
-xsteps = int((xmax-xmin)/step)+1
-ysteps = int((ymax-ymin)/step)+1
-fsteps = int((fmax-fmin)/step)+1
+xsteps = round((xmax-xmin)/step)+1
+ysteps = round((ymax-ymin)/step)+1
+fsteps = round((fmax-fmin)/step)+1
+print([xsteps,ysteps,fsteps])
 alpha = np.linspace(xmin,xmax,xsteps)
 beta = np.linspace(ymin,ymax,ysteps)
 theta = np.linspace(fmin,fmax,fsteps)
@@ -159,10 +160,10 @@ partitionECM = [xsteps//2]
 TotalSamples = fsteps*ysteps*len(partitionLS_PSM1)
 OptimizationData = [[]] 
 
-#"""
+"""
 offset = 3
 spinalLocation = 0
-FetalPivotAngle = 30
+FetalPivotAngle = 20
 Fetus.rotate(FetalPivotAngle,axis=(1,0,0),point=FetalHeadPivot,rad=False)
 Lesion.rotate(FetalPivotAngle,axis=(1,0,0),point=FetalHeadPivot,rad=False)
 LesionNormalVector.rotate(FetalPivotAngle,axis=(1,0,0),point=FetalHeadPivot,rad=False)
@@ -192,7 +193,7 @@ MeshReset(PSM2_EE,a3,b3)
 #MeshReset(ECM_sweep,a1,b1)
 #MeshReset(PSM1_sweep,a2,b2)
 #MeshReset(PSM2_sweep,a3,b3)
-#"""
+"""
 
 i=0
 for t in range(fsteps):
@@ -216,6 +217,8 @@ for t in range(fsteps):
                 print("estimated run time: %5i / %5i" %(i , TotalSamples))
                 #internal = getInternalIntersect(ECM_FOV = ECM_FOV , PSM1_RWS = PSM1_EE , PSM2_RWS=PSM2_EE)
                 #OptimizationData.append([t,a1,b1,a2,b2,a3,b3,internal] + getPortToLesionData(a1,b1,a2,b2,a3,b3))
+                print([t,a1,b1,a2,b2,a3,b3])
+                print(getPortToLesionData(a1,b1,a2,b2,a3,b3))
                 OptimizationData.append([t,a1,b1,a2,b2,a3,b3] + getPortToLesionData(a1,b1,a2,b2,a3,b3))
                 #plt.interactive().close()
                 i+=1
@@ -235,5 +238,5 @@ MeshTransformtoPort(PSM1_EE,a2,b2)
 MeshTransformtoPort(PSM2_EE,a3,b3)
 
 OptimizationData.pop(0)
-print(OptimizationData)
+#print(OptimizationData)
 plt.interactive().close()

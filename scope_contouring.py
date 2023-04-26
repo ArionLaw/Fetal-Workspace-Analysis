@@ -5,25 +5,30 @@ from scipy.signal import find_peaks
 import math
 
 T = np.load("data_file.npy")    # iteration results: output data table
+np.savetxt("data_file.csv",T)
+print(T)
 ft = [0,5,10,15,20,25,30]
-alpha = [-15,-10,-5,0,5,10,15]  # alpha angle indexing
-beta =[-30,-25,-20,-15,-10,-5,0,5,10,15,20]      # beta angle indexing
+# alpha = [-15,-10,-5,0,5,10,15]  # alpha angle indexing
+# a_new = []
+b_new = np.arange(-15,16,1)
+print(b_new)
+# beta =[-30,-25,-20,-15,-10,-5,0,5,10,15,20]      # beta angle indexing
 
-zi = np.zeros((11,7))
-zj = np.zeros((11,7))
-zk = np.zeros((11,7))
+zi = np.zeros((31,7))
+zj = np.zeros((31,7))
+zk = np.zeros((31,7))
 
-zin = np.zeros((11,7))
-zjn = np.zeros((11,7))
-zkn = np.zeros((11,7))
-zt = np.zeros((11,7))
+zin = np.zeros((31,7))
+zjn = np.zeros((31,7))
+zkn = np.zeros((31,7))
+zt = np.zeros((31,7))
 
 for n in range(len(T)):
         x_val = int(T[n,2])
         y_val = int(T[n,0])
-        zi[x_val,y_val] = T[n,7]*100 # scope approach distance
-        zj[x_val,y_val] = T[n,10]*180/(math.pi)# scope approach angle
-        zk[x_val,y_val] = T[n,13]*180/(math.pi)# scope entry angle
+        zi[x_val,y_val] = T[n,7+7]*100 # scope approach distance
+        zj[x_val,y_val] = T[n,10+7]*180/(math.pi)# scope approach angle
+        zk[x_val,y_val] = T[n,13+7]*180/(math.pi)# scope entry angle
 
 # # Trying 3D plot
 # X,Y = np.meshgrid(beta,ft)
@@ -62,14 +67,14 @@ zt = (zt - z_min)/z_range
 
 # Optimization! Combining all 3 characteristics.
 # normalize them first
-X,Y = np.meshgrid(beta,ft)
+X,Y = np.meshgrid(b_new,ft)
 fig, ax = plt.subplots()
 levels = np.linspace(0,1,11)
-PI = ax.contourf(beta,ft,np.transpose(zt),levels=levels,cmap='viridis')
-# PJ = ax.contourf(beta,ft,,cmap='viridis_r',alpha=0.3)
-# PK = ax.contourf(beta,ft,,cmap='viridis_r',alpha=0.3)
+PI = ax.contourf(b_new,ft,np.transpose(zt),levels=levels,cmap='viridis')
+# PJ = ax.contourf(b_new,ft,,cmap='viridis_r',alpha=0.3)
+# PK = ax.contourf(b_new,ft,,cmap='viridis_r',alpha=0.3)
 ax.set_title('Optimal Scope Position for \nMax Approach Dist, Min Approach & Min Entry Angle (1:2:1)',fontsize=10)
-ax.set_xlabel('Scope Central Position Angle (deg)')
+ax.set_xlabel('Scope Offset (cm)')
 ax.set_ylabel('Fetal Tilt Angle (deg)')
 
 cbar = fig.colorbar(PI)

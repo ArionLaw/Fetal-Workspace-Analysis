@@ -7,33 +7,36 @@ import math
 T = np.load("data_file.npy")    # iteration results: output data table
 ft = [0,5,10,15,20,25,30]
 # alpha = [-15,-10,-5,0,5,10,15]  # alpha angle indexing
-alpha = [0,5,10,15]
-beta =[-30,-25,-20,-15,-10,-5,0,5,10,15,20]      # beta angle indexing
+# alpha = [0,5,10,15]
+# beta =[-30,-25,-20,-15,-10,-5,0,5,10,15,20]      # beta angle indexing
+a_new = np.arange(0,11,1)
+b_new = np.arange(-15,16,1)
 T[:,0] = 5*T[:,0]
 
-zT = np.zeros((11, 4))
+zT = np.zeros((31, 11))
 
 for m in ft:
-        zi = np.zeros((11, 4))
-        zj = np.zeros((11, 4))
-        zk = np.zeros((11, 4))
+        zi = np.zeros((31, 11))
+        zj = np.zeros((31, 11))
+        zk = np.zeros((31, 11))
 
-        zin = np.zeros((11, 4))
-        zjn = np.zeros((11, 4))
-        zkn = np.zeros((11, 4))
-        zt = np.zeros((11, 4))
+        zin = np.zeros((31, 11))
+        zjn = np.zeros((31, 11))
+        zkn = np.zeros((31, 11))
+        zt = np.zeros((31, 11))
 
         for n in range(len(T)):
                 x_val = int(T[n,6])
                 y_val = int(T[n,5])
                 if int(T[n,0]) == m:
-                        zi[x_val, y_val-3] = 100*T[n,9]  # tool approach distance
-                        zj[x_val, y_val-3] = 180*T[n,12]/(math.pi)  # tool approach angle
-                        zk[x_val, y_val-3] = 180*T[n,15]/(math.pi)  # tool entry angle
-                        if(zi[x_val,0]) == 0: zi[x_val, 0] = 100 * T[n, 7]  # scope approach distance when at midline
-                        if(zj[x_val,0]) == 0: zj[x_val, 0] = 180 * T[n, 10] / (math.pi)  # scope approach angle when at midline
-                        if(zk[x_val,0]) == 0: zk[x_val, 0] = 180 * T[n, 13] / (math.pi)  # scope entry angle when at midline
+                        zi[x_val, y_val-10] = 100*T[n,9+7]  # tool approach distance
+                        zj[x_val, y_val-10] = 180*T[n,12+7]/(math.pi)  # tool approach angle
+                        zk[x_val, y_val-10] = 180*T[n,15+7]/(math.pi)  # tool entry angle
+                        if(zi[x_val,0]) == 0: zi[x_val, 0] = 100 * T[n, 7+7]  # scope approach distance when at midline
+                        if(zj[x_val,0]) == 0: zj[x_val, 0] = 180 * T[n, 10+7] / (math.pi)  # scope approach angle when at midline
+                        if(zk[x_val,0]) == 0: zk[x_val, 0] = 180 * T[n, 13+7] / (math.pi)  # scope entry angle when at midline
 
+        print(zi)
         # Normalizing scores (clean this up if there's time)
         # min value in score
         I_min = np.amin(zi)
@@ -58,18 +61,18 @@ for m in ft:
 
         # Optimization! Combining all 3 characteristics.
         # normalize them first
-        X, Y = np.meshgrid(beta, ft)
+        # X, Y = np.meshgrid(beta, ft)
         fig, ax = plt.subplots()
         levels = np.linspace(0, 1, 11)
-        PI = ax.contourf(beta, alpha, np.transpose(zt), levels=levels, cmap='viridis')
+        PI = ax.contourf(b_new, a_new, np.transpose(zt), levels=levels, cmap='viridis')
         # PJ = ax.contourf(beta,ft,,cmap='viridis_r',alpha=0.3)
         # PK = ax.contourf(beta,ft,,cmap='viridis_r',alpha=0.3)
         ax.set_title('Optimal Tool Position for \nMax Approach Dist, Min Approach & Min Entry Angle (1:2:1); \nFetal Tilt ='+str(m)+'deg',fontsize=10)
-        ax.set_xlabel('Scope Central Position Angle (deg)')
-        ax.set_ylabel('Tool Offset Position Angle (deg)')
+        ax.set_xlabel('Scope Offset (cm)')
+        ax.set_ylabel('Tool Offset Position (cm)')
 
         cbar = fig.colorbar(PI)
-        plt.savefig(str(m)+'Tool-121.png')
+        plt.savefig(str(m)+'Tool-121-L.png')
         plt.close()
 
         ## Plot indiv. parameter results

@@ -247,7 +247,8 @@ for t in range(fsteps):
                 #time.sleep(0.2)
                 plt.at(0).show(port_locs, Ext_Uterus_Simp, Uterus, Fetus, Lesion, LesionNormalVector, ECM_FOV, PSM1_EE , PSM2_EE, __doc__, axes=1, camera = {'pos':(0.3,-0.6,0.6), 'focal_point':(0,0,0), 'viewup':(0,0,1)})
                 print("estimated run time: %5i / %5i" %(i , TotalSamples))
-                OptimizationData.append([tilt_angle[t],x1,y1,x2,y2,x3,y3] + getPortToLesionData(a1,b1,a2,b2,a3,b3))
+                # OptimizationData.append([tilt_angle[t],x1,y1,x2,y2,x3,y3] + getPortToLesionData(a1,b1,a2,b2,a3,b3))
+                OptimizationData.append([t,a1,b1,a2,b2,a3,b3,tilt_angle[t], x1, y1, x2, y2, x3, y3] + getPortToLesionData(a1, b1, a2, b2, a3, b3))
                 #plt.interactive().close()
                 i+=1
 
